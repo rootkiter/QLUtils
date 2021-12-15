@@ -29,13 +29,13 @@ def qlutil_execute_entry(sampath, faddrs, otherargs = None):
 
 
 # your gadgets callback ..
-def callback_gadgets(qlkit, serial, gdt, curr_res, rcbnArchive, userdata):
+def callback_gadgets(qlkit, serial, gdt, curr_res, rcbnRes, userdata):
     print("---> %5s %-20s %s..." % (
         str(serial), gdt.Alias, "%s..." % (str(curr_res)[:40])
     ))
 
     if gdt.Alias == "prepare_done":
-        rcbnArchive.archive("p_enc", curr_res.ret)
+        rcbnRes.archive("p_enc", curr_res.ret)
     elif gdt.Alias == 'decrypt_done':
         plaintext = qlkit.mem.string(curr_res.ret)
         print(plaintext)
