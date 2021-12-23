@@ -25,15 +25,16 @@ from .BuiltIn import MonitorMemAbs
 
 def ARCHGadgets(qlkit):
     archkey_map = {
-            'mips_linux_LSB_libc' : MIPS,
-            'mips_linux_MSB_libc' : MIPS,
-            'arm_linux_LSB_libc'  : ARM,
-            "arm_linux_LSB_uClibc": ARM,
-            'x86_linux_LSB_libc'  : X686,
-            'x8664_linux_LSB_libc': X86_64,
+            "x86"   : X686      ,
+            "x8664" : X86_64    ,
+            "mips"  : MIPS      ,
+            "arm"   : ARM       ,
+            "arm_thumb" : ARM   ,
+            "a8086" : X686      ,
     }
-    keystr = qlkit.arch_key()
-    if keystr not in archkey_map:
-        print('didn\'t found match gadgets.')
+    archtype = qlkit.arch_key()
+
+    if archtype not in archkey_map:
+        print('didn\'t found match gadgets. %s' % archtype)
         return None
-    return archkey_map[keystr]
+    return archkey_map[archtype]

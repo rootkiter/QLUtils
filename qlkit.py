@@ -9,44 +9,13 @@
 import qiling, os
 from qiling.utils import ql_guess_emu_env
 from qiling.utils import ostype_convert_str, arch_convert_str
-from qiling.const import QL_ENDIAN, QL_INTERCEPT, QL_CALL_BLOCK
+from qiling.const import QL_ENDIAN, QL_INTERCEPT, QL_CALL_BLOCK, QL_ARCH
 from elftools.elf.elffile import ELFFile
 
 endian_map = {
         QL_ENDIAN.EL: "LSB",
         QL_ENDIAN.EB: "MSB",
 }
-
-def file_need_env(binpath):
-    arch, ost, endian = ql_guess_emu_env(binpath)
-    arch = arch_convert_str(arch)
-    ost = ostype_convert_str(ost)
-    endian = endian_map[endian]
-
-    #  linux libc? uClibc? ...
-    envlib = 'libc'
-    if 'linux' == ost:
-        f = open(binpath, 'rb')
-        elfdata = f.read().ljust(52, b'\x00')
-        elffile = ELFFile(open(binpath, 'rb'))
-        for seg in elffile.iter_segments():
-            if seg['p_type'] != 'PT_INTERP':
-                continue
-            start = seg['p_offset']
-            end   = start + seg['p_filesz']
-            ldname = elfdata[start:end]
-            ldname = (ldname[: ldname.find(b'\x00')].decode('utf-8'))
-            if 'uClibc' in ldname:
-                envlib = 'uClibc'
-    return (arch, ost, endian, envlib)
-
-def try_get_key_str(binpath):
-    arch, ost, endian, envlib = file_need_env(binpath)
-    keystr = "%s_%s_%s_%s" % (
-            arch, ost, endian, envlib
-    )
-    print("filekey -> ", keystr)
-    return True, keystr
 
 class QlKit(qiling.Qiling):
     def __init__(self, sam_argv, **kw):
@@ -55,9 +24,6 @@ class QlKit(qiling.Qiling):
         if len(sam_argv) < 1:
             return None
         self.sampath = sam_argv[0]
-        ok, self.keystr = try_get_key_str(self.sampath)
-        if not ok:
-            return None
         super().__init__(self.sam_argv, ".", **kw)
         self.elffile = ELFFile(open(self.sampath, 'rb'))
 
@@ -89,7 +55,16 @@ class QlKit(qiling.Qiling):
         return 8
 
     def arch_key(self):
-        return self.keystr
+        arch_map = {
+                QL_ARCH.MIPS : "mips",
+                QL_ARCH.X86  : "x86" ,
+                QL_ARCH.X8664: "x8664",
+                QL_ARCH.ARM  : 'arm',
+                QL_ARCH.ARM_THUMB: "arm_thumb",
+        }
+        if self.archtype not in arch_map:
+            return None
+        return arch_map[self.archtype]
 
     def trace_everyinst(self, start, end, print_msg=True):
         bin_code_buf = self.mem.read(start, end-start)
