@@ -24,7 +24,7 @@ class ArchTranslateAbs(abc.ABC):
         return qlkit.reg.v0
 
     def get_result_value(self, qlkit):
-        return {"ret": self.get_return_value()}
+        return {"ret": self.get_return_value(qlkit)}
 
     @abc.abstractmethod
     def set_ret_value(self, qlkit, value):

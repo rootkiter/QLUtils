@@ -207,8 +207,6 @@ class GOT_POINTER_INIT(BuiltInGadgetAbs):
         qlkit.set_got_value(self.got_name, tmpaddr)
         return {"got_value_init": tmpaddr}
 
-
-
 class STACKALLOC(BuiltInGadgetAbs):
     def __init__(self, name, size, **kw):
         super().__init__(**kw)

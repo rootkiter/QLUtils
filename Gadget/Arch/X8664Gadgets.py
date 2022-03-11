@@ -26,6 +26,8 @@ class X8664_ArchTranslate(ArchTranslateAbs):
             return qlkit.reg.rcx
         elif argnr == 4:
             return qlkit.reg.r8d
+        elif argnr == 5:
+            return qlkit.reg.r9d
         return None
 
     def set_ret_value(self, qlkit, retvalue):
