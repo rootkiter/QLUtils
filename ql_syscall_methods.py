@@ -36,6 +36,11 @@ def sys_send(qlkit, sockfd, p_buf, size, flags):
 def sys_recv(qlkit, sockfd, p_buf, size, flags):
     return size
 
+@_sys_decorator("fcntl", 3)
+def sys_fcntl(qlkit, sockfd, arg2, arg3):
+    print("!!!")
+    return 1
+
 @_sys_decorator("socketcall", 2)
 def sys_socketcall(qlkit, call_no, p_args):
     SOCKETCALL_SYS_SOCKET  = 1
