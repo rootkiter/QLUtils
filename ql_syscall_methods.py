@@ -44,6 +44,10 @@ def sys_fcntl(qlkit, sockfd, arg2, arg3):
 def sys_fcntl(qlkit, sockfd, arg2, arg3):
     return 1
 
+@_sys_decorator("syscall", 3)
+def sys_syscall(qlkit, syscall_num, arg1, arg2):
+    return 1
+
 @_sys_decorator("socketcall", 2)
 def sys_socketcall(qlkit, call_no, p_args):
     SOCKETCALL_SYS_SOCKET  = 1
@@ -92,4 +96,5 @@ def sys_socketcall(qlkit, call_no, p_args):
             for i in range(nargs)
     )
     return method(qlkit, *params)
+
 
