@@ -268,21 +268,7 @@ class StackBalance(ArchGadgetAbs, ArchTranslateAbs):
     def nop_code_for_hook(self):
         return ['nop']
 
-class CallFunctionAbs(StackBalance):
-    def __init__(self, alias, addr, argnum, **kw):
-        new_ali = "%s" % (alias)
-        super().__init__(addr, alias = new_ali, argnum = argnum, **kw)
-        self.start          = addr
-
-        # trace sub-function
-        self.call_address   = 0
-        self.ret_address    = 0
-
-        # when sub-function trace don't expected. reset the trace flag
-        #  This part mainly deals with HookFunction gadget.
-        self.last_address   = addr
-        self.count_number   = 0
-
+class _share_belongs_lv1_check_method:
     def belongs_to_lv1_code_block(self, qlkit, inst):
         address = qlkit.reg.arch_pc
         mnemonic = "nop"
@@ -331,16 +317,29 @@ class CallFunctionAbs(StackBalance):
                     return True
         return False
 
-class RunCodesAbs(StackBalance):
+
+
+class CallFunctionAbs(StackBalance, _share_belongs_lv1_check_method):
+    def __init__(self, alias, addr, argnum, **kw):
+        new_ali = "%s" % (alias)
+        super().__init__(addr, alias = new_ali, argnum = argnum, **kw)
+        self.start          = addr
+
+        # trace sub-function
+        self.call_address   = 0
+        self.ret_address    = 0
+
+        # when sub-function trace don't expected. reset the trace flag
+        #  This part mainly deals with HookFunction gadget.
+        self.last_address   = addr
+        self.count_number   = 0
+
+class RunCodesAbs(StackBalance, _share_belongs_lv1_check_method):
     def __init__(self, start, end, argnum=0, **kw):
         super().__init__(argnum=argnum, **kw)
         self.start = start
         self.end   = end
 
-    def belongs_to_lv1_code_block(self, addr):
-        if addr >= self.start and addr <= self.end:
-            return True
-        return False
 
 class MonitorGadgetAbs(GadgetBase, abc.ABC):
     def __init__(self, alias, addr_be_monitor, argnum=0, **kw):

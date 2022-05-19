@@ -17,6 +17,18 @@ endian_map = {
         QL_ENDIAN.EB: "MSB",
 }
 
+from unicorn import *
+
+def hook_mem_invalid(qlkit, access, address, size, value):
+    if access in (UC_MEM_WRITE_UNMAPPED, UC_MEM_READ_UNMAPPED):
+        PAGE_SIZE = 0x1000
+        aligned = address & ~(PAGE_SIZE - 1)
+        # map the entire page containing the invalid address and fill it with 'Q's
+        qlkit.mem.map(aligned, PAGE_SIZE)
+        qlkit.mem.write(aligned, b'\x00' * PAGE_SIZE)
+        return True
+    return False
+
 class QlKit(qiling.Qiling):
     def __init__(self, sam_argv, **kw):
         self.sam_argv = sam_argv
@@ -53,6 +65,12 @@ class QlKit(qiling.Qiling):
         if self.archbit == 32:
             return 4
         return 8
+
+    def emu_env_init(self):
+        # print(self.uc)
+        PAGE_SIZE = 0x1000
+        self.reg.arch_sp &= ~(PAGE_SIZE - 1)
+        self.hook_mem_invalid(hook_mem_invalid)
 
     def arch_key(self):
         arch_map = {
@@ -116,6 +134,11 @@ class QlKit(qiling.Qiling):
         needsize = size + align
         tmpstart = self.mem_heap_alloc(needsize)
         return (tmpstart - (tmpstart % 4))
+
+    def show_registers(self):
+        print("r12", self.reg.r12)
+        print("lr", self.reg.lr)
+        print("sp", self.reg.sp)
 
     def my_hook_code(self, address, callback, userarg, trigger_once=True):
         def on_cbf(ql, address, size, arginside):
@@ -191,6 +214,7 @@ class QlKit(qiling.Qiling):
                 funcname, cbk_inside, QL_INTERCEPT.CALL
         )
 
+
     def my_emu_start(self, begin = None, end = None):
         if not self.can_emulator():
             return False
@@ -199,6 +223,7 @@ class QlKit(qiling.Qiling):
             pass
         self.hook_intno(intr_echo, 12)
         self.hook_intno(intr_echo, 15)
+        self.emu_env_init()
         self.emu_start(begin, end)
 
     def segments_check(self):
