@@ -28,6 +28,15 @@ def sys_socket(qlkit, int_domain, int_type, int_protocol):
 def sys_connect(qlkit, sockfd, p_addr, adrsize):
     return 0
 
+@_sys_decorator("select", 5)
+def sys_select(qlkit, nfd, readfds, writefds, errfds, timeout):
+    return -1
+
+@_sys_decorator("_newselect", 5)
+def sys_newselect(qlkit, nfd, readfds, writefds, errfds, timeout):
+    return -1
+
+
 @_sys_decorator("send", 4)
 def sys_send(qlkit, sockfd, p_buf, size, flags):
     return size
@@ -47,6 +56,10 @@ def sys_fcntl(qlkit, sockfd, arg2, arg3):
 @_sys_decorator("syscall", 3)
 def sys_syscall(qlkit, syscall_num, arg1, arg2):
     return 1
+
+@_sys_decorator("close", 1)
+def sys_close(qlkit, fd):
+    return 0
 
 @_sys_decorator("socketcall", 2)
 def sys_socketcall(qlkit, call_no, p_args):
