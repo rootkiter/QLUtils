@@ -136,9 +136,14 @@ class QlKit(qiling.Qiling):
         return (tmpstart - (tmpstart % 4))
 
     def show_registers(self):
-        print("r12", self.reg.r12)
-        print("lr", self.reg.lr)
-        print("sp", self.reg.sp)
+        for name in self.reg.register_mapping:
+            print("%s: %s" % (name, hex(getattr(self.reg, name))))
+
+    def show_reg_at(self, pc):
+        def show_regs(qlkit, *args):
+            for name in qlkit.reg.register_mapping:
+                print("%s:%s" % (name, hex(getattr(qlkit.reg, name))))
+        self.my_hook_code(pc, show_regs, None)
 
     def my_hook_code(self, address, callback, userarg, trigger_once=True):
         def on_cbf(ql, address, size, arginside):
